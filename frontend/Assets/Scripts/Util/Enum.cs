@@ -4,5 +4,7 @@ public enum GameplayStatus
     Menu,
     GameRunning,
     GetCard,
-    OpenCard
+    OpenCard,
+    YourTurn,
+    OpponentTurn
 }

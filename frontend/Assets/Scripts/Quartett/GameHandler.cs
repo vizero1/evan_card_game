@@ -19,6 +19,9 @@ public class GameHandler : MonoSingleton<GameHandler>
     public string PlayerId;
     public string GameId;
     public bool NeedStatus;
+    public bool HasOpponent;
+    public bool MyTurn;
+    public CardDto CurrentCard;
 
     void Start()
     {
@@ -28,10 +31,10 @@ public class GameHandler : MonoSingleton<GameHandler>
 
     void DoUpdate()
     {
-        if (NeedStatus)
-        {
-            DoRequest(RequestType.Status);
-        }
+        //if (NeedStatus)
+        //{
+        //    DoRequest(RequestType.Status);
+        //}
     }
 
     public void DoRequest(RequestType type)
@@ -84,10 +87,8 @@ public class GameHandler : MonoSingleton<GameHandler>
             var dto = JsonUtility.FromJson<CreateGameDto>(data);
             GameId = dto.gameId;
             PlayerId = dto.playerId;
-            NeedStatus = true;
-            Events.Instance.GameplayStatus = GameplayStatus.GameRunning;
+            CreateJoinGameSuccessful();
         }
-
     }
 
     private IEnumerator RequestJoinGame()
@@ -109,16 +110,24 @@ public class GameHandler : MonoSingleton<GameHandler>
             Debug.Log(data);
             var dto = JsonUtility.FromJson<CreateGameDto>(data);
             PlayerId = dto.playerId;
-            NeedStatus = true;
-            Events.Instance.GameplayStatus = GameplayStatus.GameRunning;
+            CreateJoinGameSuccessful();
         }
+    }
+
+    private void CreateJoinGameSuccessful()
+    {
+        NeedStatus = true;
+        Events.Instance.GameplayStatus = GameplayStatus.GameRunning;
+        DoRequest(RequestType.Status);
+        UIManager.Instance.Switch(Layer.Main, UIAction.Hide, 0);
+        UIManager.Instance.Switch(Layer.Ingame, UIAction.Show, 0);
     }
 
     private IEnumerator RequestMakeMove()
     {
         var url = Config.Instance.Url + "/move/" + GameId;
         var formData = new List<IMultipartFormSection>();
-        formData.Add(new MultipartFormFileSection("playerName", "Player 1 hardcoded"));
+        formData.Add(new MultipartFormFileSection("playerId", PlayerId));
 
         var www = UnityWebRequest.Post(url, formData);
         yield return www.SendWebRequest();
@@ -132,7 +141,10 @@ public class GameHandler : MonoSingleton<GameHandler>
             var data = www.downloadHandler.text;
             Debug.Log(data);
             var dto = JsonUtility.FromJson<MakeMoveDto>(data);
-            PlayerId = dto.playerId;
+            var hasWon = dto.hasWon;
+
+            // ToDo check hasWon 
+
             NeedStatus = true;
             Events.Instance.GameplayStatus = GameplayStatus.GameRunning;
         }
@@ -141,7 +153,7 @@ public class GameHandler : MonoSingleton<GameHandler>
     private IEnumerator RequestStatus()
     {
         Debug.Log("GetStatus");
-        var url = Config.Instance.Url + "/status/" + GameId;
+        var url = Config.Instance.Url + "/status/" + GameId + "?playerId=" + PlayerId;
         var www = UnityWebRequest.Get(url);
         yield return www.SendWebRequest();
 
@@ -154,11 +166,46 @@ public class GameHandler : MonoSingleton<GameHandler>
             var data = www.downloadHandler.text;
             Debug.Log(data);
             var dto = JsonUtility.FromJson<StatusDto>(data);
-            PlayerId = dto.playerId;
-            NeedStatus = true;
+
+            if (dto.hasOpponent)
+            {
+                var hasChanged = false;
+                if (HasOpponent == false)
+                {
+                    HasOpponent = true;
+                    hasChanged = true;
+                    MyTurn = dto.myTurn;
+                    if (!MyTurn)
+                    {
+                        NeedStatus = true;
+                    }
+                }
+                else
+                {
+                    if (!MyTurn && dto.myTurn)
+                    {
+                        MyTurn = dto.myTurn;
+                        hasChanged = true;
+                    }
+                }
+                CurrentCard = dto.currenCard;
+
+                if (hasChanged)
+                {
+                    if (MyTurn)
+                    {
+                        Events.Instance.GameplayStatus = GameplayStatus.YourTurn;
+                    }
+                    else
+                    {
+                        Events.Instance.GameplayStatus = GameplayStatus.OpponentTurn;
+                    }
+                }
+            }
 
 
             var hasCardChanged = false;
+            var isMyTurn = false;
 
             if (hasCardChanged)
             {

@@ -1214,6 +1214,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4464461c7623d31479954fa7ac4b7f7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsMyTurnText: 1
+  _text: {fileID: 0}
 --- !u!1 &735670682
 GameObject:
   m_ObjectHideFlags: 0
@@ -1634,6 +1636,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4464461c7623d31479954fa7ac4b7f7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsMyTurnText: 0
+  _text: {fileID: 0}
 --- !u!1 &1152994092
 GameObject:
   m_ObjectHideFlags: 0
@@ -2633,6 +2637,9 @@ MonoBehaviour:
   PlayerId: 
   GameId: 
   NeedStatus: 0
+  HasOpponent: 0
+  MyTurn: 0
+  CurrentCard: {fileID: 0}
 --- !u!1 &1804253210
 GameObject:
   m_ObjectHideFlags: 0

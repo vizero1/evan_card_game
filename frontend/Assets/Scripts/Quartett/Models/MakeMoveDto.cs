@@ -5,6 +5,5 @@ using UnityEngine;
 [System.Serializable]
 public class MakeMoveDto
 {
-    public string playerId;
-    public string gameId;
+    public string hasWon;
 }

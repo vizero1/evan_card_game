@@ -5,6 +5,8 @@ using UnityEngine;
 [System.Serializable]
 public class StatusDto
 {
-    public string playerId;
-    public string gameId;
+    public bool hasOpponent;
+    public CardDto currenCard;
+    public bool myTurn;
+    public string attributeLastRound;
 }
