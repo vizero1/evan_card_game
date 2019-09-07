@@ -1,5 +1,4 @@
-
 module.exports = {
-	routeHandler: require('./routeHandler.js'),
-	output: require('./outputHandling.js')
-}
+  routeHandler: require('./routeHandler.js'),
+  output: require('./outputHandling.js')
+};

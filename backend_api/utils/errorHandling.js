@@ -1,5 +1,5 @@
 module.exports = {
-	handleError: function(err) {
-		console.error(err)
-	}
-}
+  handleError: function(err) {
+    console.error(err);
+  }
+};

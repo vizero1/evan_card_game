@@ -40,7 +40,7 @@ class RouteHandler {
             });
             req.on('end', function() {
               var inputAsJson = {};
-              if(!!body) {
+              if (!!body) {
                 inputAsJson = JSON.parse(body);
               }
               route.post(req, res, inputAsJson);
