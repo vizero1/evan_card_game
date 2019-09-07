@@ -1,10 +1,5 @@
-
 module.exports = {
-	
-	post: function(body) {
-
-
-	}
-	
-}
-
+  post: function(body) {
+    console.log('joingame post working');
+  }
+};

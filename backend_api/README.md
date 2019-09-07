@@ -19,8 +19,8 @@ node main.js > output.log 2> err.log #on production machines
 
 ## Features
 [x] RESTful API
-[x] Swagger
-[x] ESLint
+[ ] Swagger
+[ ] ESLint
 [x] JavaScript
 [ ] ES6 using Babel
 [ ] Forever
