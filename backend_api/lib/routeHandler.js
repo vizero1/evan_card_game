@@ -1,35 +1,34 @@
 //var EventEmitter = require('events').EventEmitter
 var utils = require('./../utils')
-var unknownUrlRoute = require('./../routes/unknownUrl.js')
-var unknownUrl = new unknownUrlRoute()
+var createGameRoute = require('./../routes/createGame.js')
+var createGameInstance = new createGameRoute()
 
-class RouteHandler /*extends EventEmitter*/ {
+class RouteHandler {
 		
 	constructor() {
-		//super()
 	}
   
 	handle(app) {
-		app.post('/', function (req, res) {
-			handleUrls(req, res)
+		app.post('/creategame', function (req, res) {
+			handleCreateGame(req, res)
 		})
-		app.post('/:url', function (req, res) {
-			handleUrls(req, res)
-		})
-		app.get('/', function (req, res) {
-			handleUrls(req, res)
-		})
-		app.get('/:url', function (req, res) {
-			handleUrls(req, res)
-		})
+		// app.post('/joingame', function (req, res) {
+    //   // ToDo
+		// })
+		// app.get('/status', function (req, res) {
+    //   // ToDo
+		// })
+		// app.post('/makemove', function (req, res) {
+    //   // ToDo
+		// })
 		
-		var handleUrls = function(req, res)
+		var handleCreateGame = function(req, res)
 		{
 			var url = req.params.url
 			var route = urlHasRoute(url)
 			if(!route) {
 				if(url !== undefined) {
-					unknownUrl.handle(req, res)
+					startGameInstance.handle(req, res)
 				} else {
 					res.writeHead(200)
 					res.end('Url is: ' + url)
@@ -89,8 +88,7 @@ class RouteHandler /*extends EventEmitter*/ {
 			console.log(e)
 			res.writeHead(404)
 			res.end()
-        }
-
+    }
 	
 		return app
 	}

@@ -5,7 +5,8 @@ class OutputHandling {
   
 	throw200(res, data) {
 		this.sendData(res, data, 200)
-	}
+  }
+  
 	throw201(res, data) {
 		this.sendData(res, data, 201)
 	}

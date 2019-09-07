@@ -1,7 +1,7 @@
 
 module.exports = {
 	
-	post: function(body) {
+	put: function(body) {
 
 
 	}
