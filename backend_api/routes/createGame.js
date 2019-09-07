@@ -1,26 +1,29 @@
 var createGameDomain = require('./../domain/createGame')
 var outputHandling = require('./../lib/outputHandling.js')
 
-var createGameDomainInstance = new createGameDomain()
 var output = outputHandling.instance
 
-class CreateGameRoute {
-
-	constructor() {}
+module.exports = {
 	
-	handle(req, res) {
+	get: function(req, res) {
+		createGameDomain
+			.get()
+			.then(data => output.throw200(res, data))
+			.catch(err => output.throw404(res, err))
+	},
 
-		var paramXyz = req.params.xyz
+	put: function(req, res, body) {
+		createGameDomain
+			.put(body)
+			.then(data => output.throw201(res, data))
+			.catch(err => output.throw400(res, err))
+	},
 
-		createGameDomainInstance
-			.post(paramXyz)
-			.then(data => {
-				res.redirect(data.realUrl)
-				res.end()
-			})
-			.catch(err => output.throw200(res, err))
-
+	post: function(req, res, body) {
+		createGameDomain
+			.post(body)
+			.then(data => output.throw201(res, data))
+			.catch(err => output.throw400(res, err))
 	}
 	
 }
-module.exports = CreateGameRoute

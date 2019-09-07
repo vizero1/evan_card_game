@@ -1,20 +1,34 @@
+var lib = require('./../lib')
+// var linkGenerator = lib.linkGenerator
+// var linkGen = new linkGenerator()
+// var linksDB = db.linksDB.instance
+var output = lib.output.instance
 
-class CreateGame {
-
-	constructor() {}
+// desc: generate miniUrl, check DB if not existing yet and then store it
+module.exports = {
 	
-	handle(paramXyz) {
+	get: function(req, res) {
+		return new Promise(function(resolve, reject) {
+			resolve('creatGame GET  working')
+		})
+	},
 
-    console.log('/createGame GET', paramXyz);
-
-    // get input via:
-    // var xyz = body.paramXYZ
-
-    // return as 200
-    return '/createGame GET';
-
-
+  
+	put: function(req, res) {
+		return new Promise(function(resolve, reject) {
+			resolve('creatGame PUT working')
+		})
+  },
+  
+	post: function(body) {
+		var that = this
+		return new Promise(function(resolve, reject) {
+			// validate input
+			var realUrl = body.realUrl
+			if(!realUrl || 0 === realUrl.length)
+				reject('REALURL_NOT_DEFINED')
+      resolve("creatGame post working");
+		})
 	}
 	
 }
-module.exports = CreateGame
