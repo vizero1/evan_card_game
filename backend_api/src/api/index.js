@@ -285,10 +285,21 @@ export default ({ config, runtime }) => {
       const myTurn = await myCards.value.getEntry('hasTurn');
       const cards = await myCards.value.getListEntries('cards');
 
+      var card = {};
+      if (cards.length > 0) {
+        const cardDeckInstance = new Container(runtime, {
+          accountId: runtime.activeAccount,
+          address: cards[0]
+        });
+
+        console.log('Fetching cards...');
+        card = await cardDeckInstance.getEntry('characteristics');
+      }
+
       res.json({
         hasOpponent: opponent,
         myTurn: myTurn,
-        card: cards.length > 0 ? cards[0] : {},
+        card: card,
         attributeLastRound: ''
       });
     } catch (error) {
