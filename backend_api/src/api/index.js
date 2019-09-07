@@ -39,26 +39,26 @@ export default ({ config, runtime }) => {
         `Created new digital twin with address: "${await game.getContractAddress()}"`
       );
 
-      // const plugin = JSON.parse(JSON.stringify(Container.plugins.metadata));
+      const plugin = JSON.parse(JSON.stringify(Container.plugins.metadata));
 
-      // plugin.template.properties.cards = {
-      //   dataSchema: {
-      //     type: 'array',
-      //     items: {
-      //       type: 'object',
-      //       properties: {
-      //         index: {
-      //           type: 'integer'
-      //         },
-      //         address: {
-      //           type: 'string'
-      //         }
-      //       }
-      //     }
-      //   },
-      //   permissions: { 0: ['set'] },
-      //   type: 'list'
-      // };
+      plugin.template.properties.cards = {
+        dataSchema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              index: {
+                type: 'integer'
+              },
+              address: {
+                type: 'string'
+              }
+            }
+          }
+        },
+        permissions: { 0: ['set'] },
+        type: 'list'
+      };
 
       const cardListDescription = {
         name: 'quartetGameContainer',
@@ -72,7 +72,7 @@ export default ({ config, runtime }) => {
       // create a container with default template
       //const { player1cards, player2cards, cardDeckAddresses, gameLogs } = await game.createContainers({
       const { player1cards } = await game.createContainers({
-        player1cards: { description: cardListDescription } // use later { plugin }
+        player1cards: { plugin, description: cardListDescription } // use later { plugin }
       });
       console.log(
         'Created player1cards container with address:',
@@ -85,7 +85,7 @@ export default ({ config, runtime }) => {
 
       console.log('Create player2cards container');
       const { player2cards } = await game.createContainers({
-        player2cards: { description: cardListDescription } // use later { plugin }
+        player2cards: { plugin, description: cardListDescription } // use later { plugin }
       });
       console.log(
         'Created player2cards container with address:',
@@ -116,11 +116,20 @@ export default ({ config, runtime }) => {
       console.log('Fetching cards...');
       const cardsObject = await cardDeckInstance.getEntries();
 
-      const cards = [];
-      const cardNames = Object.keys(cardsObject);
-      for (let i = 0; i < cardNames.length; i++) {
-        cards.push(await cardsObject[cardNames[i]].value.getContractAddress());
-      }
+      // const cards = [];
+      // const cardNames = Object.keys(cardsObject);
+      // for (let i = 0; i < cardNames.length; i++) {
+      //   cards.push(await cardsObject[cardNames[i]].value.getContractAddress());
+      // }
+
+      const cards = await Promise.all(
+        Object.keys(cardsObject).map(async (key, index) => {
+          return {
+            index: index,
+            address: await cardsObject[key].value.getContractAddress()
+          };
+        })
+      );
 
       console.log('Shuffling cards...');
       // shuffle cards
@@ -141,12 +150,14 @@ export default ({ config, runtime }) => {
       }
 
       console.log('Add first card to player 1');
-      const card1 = cards.pop();
-      await player1cards.addListEntries('cards', [card1]);
+      const card1 = cards.splice(0, 1);
+      console.log('card1', card1);
+      await player1cards.addListEntries('cards', card1);
+      console.log('player1cards', await player1cards.getListEntries('cards'));
 
       console.log('Add second card to player 2');
-      const card2 = cards.pop();
-      await player2cards.addListEntries('cards', [card2]);
+      const card2 = cards.splice(0, 1);
+      await player2cards.addListEntries('cards', card2);
 
       console.log('Add remaining cards to deck');
       await cardDeckAddresses.addListEntries('cards', cards);
@@ -233,16 +244,124 @@ export default ({ config, runtime }) => {
 
   // perhaps expose some API metadata at the root
   api.post('/move/:gameId', async (req, res) => {
-    const { gameId } = req.params;
-    const { playerId, attribute } = req.body;
-    console.log(
-      'Player ' + playerId + ' selected attribute ' + attribute + ' for game ',
-      gameId
-    );
+    try {
+      const { gameId } = req.params;
+      const { playerId, attribute } = req.body;
 
-    res.json({
-      won: true
-    });
+      console.log('Getting DigitalTwin for gameId', gameId);
+
+      const digitalTwin = new DigitalTwin(runtime, {
+        accountId: runtime.activeAccount,
+        address: gameId
+      });
+
+      console.log('Getting entries of DigitalTwin');
+      const containers = await digitalTwin.getEntries();
+
+      const { player1cards, player2cards } = containers;
+      const player1 = player1cards.value;
+      const player2 = player2cards.value;
+
+      const player1Address = await player1.getContractAddress();
+      const player2Address = await player2.getContractAddress();
+
+      var myCards;
+      var opponentCards;
+      if (player1Address == playerId) {
+        myCards = player1cards;
+        opponentCards = player2cards;
+      } else if (player2Address == playerId) {
+        myCards = player2cards;
+        opponentCards = player1cards;
+      } else {
+        res.sendStatus(403);
+        return;
+      }
+
+      var myCardsAddresses = await myCards.value.getListEntries('cards');
+      var opponentCardsAddresses = await opponentCards.value.getListEntries(
+        'cards'
+      );
+
+      const myCurrentCardContainer = new Container(runtime, {
+        accountId: runtime.activeAccount,
+        address: myCardsAddresses[0]
+      });
+
+      const opponentCurrentCardContainer = new Container(runtime, {
+        accountId: runtime.activeAccount,
+        address: opponentCardsAddresses[0]
+      });
+
+      console.log('Fetching cards...');
+      const myCurrentCard = await myCurrentCardContainer.getEntry(
+        'characteristics'
+      );
+      const opponentCurrentCard = await opponentCurrentCardContainer.getEntry(
+        'characteristics'
+      );
+
+      const myValue = myCurrentCard[attribute];
+      const opponentValue = myCurrentCard[attribute];
+
+      var hasWon = false;
+      switch (attribute) {
+        case 'value':
+          hasWon = true; //parseFloat(myValue) > parseFloat(opponentValue);
+          break;
+        case 'marketRank':
+          hasWon = false; //
+          break;
+        case 'issueDate':
+          hasWon = true; //
+          break;
+        default:
+          throw 'invalid attribute';
+      }
+
+      if (hasWon) {
+        const movedCard = opponentCardsAddresses.splice(0, 1);
+        console.log('I have won against card', movedCard);
+
+        await runtime.dataContract.removeListEntry(
+          await opponentCards.value.getContractAddress(),
+          'cards',
+          0
+        );
+
+        console.log('Writing new card addresses list for opponent');
+        await opponentCards.value.addListEntries(
+          'cards',
+          opponentCardsAddresses
+        );
+
+        const myPlayedCard = myCardsAddresses.splice(0, 1);
+        myCardsAddresses.push(myPlayedCard);
+        myCardsAddresses.push(movedCard);
+
+        console.log('Writing new card addresses list for me');
+        await myCards.value.addListEntries('cards', myCardsAddresses);
+      } else {
+        const movedCard = myPlayedCardAddresses.splice(0, 1);
+        await myPlayedCard.value.addListEntries('cards', myPlayedCardAddresses);
+
+        const opponentPlayedCard = opponentCardsAddresses.splice(0, 1);
+        opponentCardsAddresses.push(opponentPlayedCard);
+        opponentCardsAddresses.push(movedCard);
+
+        await opponentCards.value.addListEntries(
+          'cards',
+          opponentCardsAddresses
+        );
+      }
+
+      res.json({
+        hasWon: hasWon
+      });
+    } catch (error) {
+      console.error(error);
+      res.sendStatus(500);
+    }
   });
 
   // perhaps expose some API metadata at the root
