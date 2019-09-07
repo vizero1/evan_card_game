@@ -69,7 +69,7 @@ export default ({ config, runtime }) => {
 
     console.log('Create player1cards container');
     // create a container with default template
-
+    //const { player1cards, player2cards, cardDeckAddresses, gameLogs } = await game.createContainers({
     const { player1cards } = await game.createContainers({
       player1cards: { plugin, description: cardListDescription }
     });
@@ -81,12 +81,12 @@ export default ({ config, runtime }) => {
     const { player2cards } = await game.createContainers({
       player2cards: { plugin, description: cardListDescription }
     });
-    console.log('Create cardDeckAddresses container');
+    player2cards.setEntry('username', '');
+    player2cards.setEntry('hasTurn', false);
+
     const { cardDeckAddresses } = await game.createContainers({
       cardDeckAddresses: {} //use later: {plugin}
     });
-
-    console.log('Create gameLogs container');
     const { gameLogs } = await game.createContainers({
       gameLogs: {}
     });
@@ -112,25 +112,25 @@ export default ({ config, runtime }) => {
     }
     console.dir(cards);
 
-    // //shuffle cards
-    // let shuffleCounter = cards.length;
+    // shuffle cards
+    let shuffleCounter = cards.length;
 
-    // // While there are elements in the array
-    // while (shuffleCounter > 0) {
-    //   // Pick a random index
-    //   let index = Math.floor(Math.random() * counter);
+    // While there are elements in the array
+    while (shuffleCounter > 0) {
+      // Pick a random index
+      let index = Math.floor(Math.random() * shuffleCounter);
 
-    //   // Decrease counter by 1
-    //   shuffleCounter--;
+      // Decrease counter by 1
+      shuffleCounter--;
 
-    //   // And swap the last element with it
-    //   let temp = cards[shuffleCounter];
-    //   cards[shuffleCounter] = cards[index];
-    //   cards[index] = temp;
-    // }
+      // And swap the last element with it
+      let temp = cards[shuffleCounter];
+      cards[shuffleCounter] = cards[index];
+      cards[index] = temp;
+    }
 
-    // console.log('Cards are now shuffled:');
-    // console.dir(cards);
+    console.log('Cards are now shuffled:');
+    console.dir(cards);
 
     // add data to container
     await cardDeckAddresses.addListEntries('cards', cards);
@@ -160,9 +160,9 @@ export default ({ config, runtime }) => {
     const { gameId } = req.params;
     const { playerName } = req.body;
 
-    console.log('Getting DigitalTwin');
+    console.log('Getting DigitalTwin for gameId', gameId);
 
-    const digitalTwin = await DigitalTwin(runtime, {
+    const digitalTwin = new DigitalTwin(runtime, {
       accountId: runtime.activeAccount,
       address: gameId
     });
@@ -170,16 +170,39 @@ export default ({ config, runtime }) => {
     console.log('Getting entries of DigitalTwin');
     const containers = await digitalTwin.getEntries();
 
-    console.dir(containers);
-    const { player1Cards, player2Cards } = containers;
+    const { player1cards, player2cards } = containers;
+    const player1 = player1cards.value;
+    const player2 = player2cards.value;
 
-    console.log(req.body);
+    const usernamePlayer1 = await player1.getEntry('username');
+    console.log('usernamePlayer1:', usernamePlayer1, '==', playerName, '?');
+    if (usernamePlayer1 == playerName) {
+      console.log(usernamePlayer1, '==', playerName, '!');
+      res.json({
+        playerId: await player1.getContractAddress()
+      });
+      return;
+    }
 
-    console.log(playerName, 'joins', gameId);
+    const usernamePlayer2 = await player2.getEntry('username');
+    console.log(usernamePlayer2, '==', playerName, '?');
+    if (usernamePlayer2 == playerName) {
+      console.log(usernamePlayer2, '==', playerName, '!');
+      res.json({
+        playerId: await player2.getContractAddress()
+      });
+      return;
+    }
+
+    if (usernamePlayer2 != '') {
+      res.sendStatus(403);
+      return;
+    }
+
+    await player2.setEntry('username', playerName);
 
     res.json({
-      gameId: 'Long-ID',
-      playerId: 'long-player-id'
+      playerId: await player2.getContractAddress()
     });
   });
 
