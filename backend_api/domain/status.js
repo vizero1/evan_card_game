@@ -1,19 +1,19 @@
 module.exports = {
   get: function(req, res) {
     return new Promise(function(resolve, reject) {
-      resolve('join game GET working');
+      resolve('status GET working');
     });
   },
 
   put: function(req, res) {
     return new Promise(function(resolve, reject) {
-      resolve('join game PUT working');
+      resolve('status PUT working');
     });
   },
 
   post: function(body) {
     return new Promise(function(resolve, reject) {
-      resolve('join game POST working');
+      resolve('status POST working');
     });
   }
 };

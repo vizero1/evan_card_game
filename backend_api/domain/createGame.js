@@ -1,9 +1,12 @@
 var lib = require('./../lib');
+var db = require('./../db');
 var output = lib.output.instance;
 
 module.exports = {
   get: function(req, res) {
     return new Promise(function(resolve, reject) {
+      const deviceTwin = db.evan.createDeviceTwin();
+
       resolve('creatGame GET working');
     });
   },

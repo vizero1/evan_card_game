@@ -1,4 +1,5 @@
 var utils = require('./../utils');
+const path = require('path');
 
 class RouteHandler {
   constructor() {}
@@ -67,11 +68,11 @@ class RouteHandler {
       var useModule = undefined;
       try {
         // check if module exists in routes folder
-        useModule = require('./../routes/' + url + '.js');
+        useModule = require(path.join('./../routes/', url + '.js'));
       } catch (e) {
         if (e.toString().includes('Cannot find module'))
-          console.log("Can't find route: /" + url);
-        else console.log(e);
+          console.error("Can't find route: /" + url, 'error', e);
+        else console.error(e);
         return false;
       }
       return useModule;
