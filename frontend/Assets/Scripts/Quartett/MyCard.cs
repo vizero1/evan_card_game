@@ -36,8 +36,6 @@ public class MyCard : MonoSingleton<MyCard>
     private void AnimateOpenCard()
     {
         _animator.Play("MeOpenCard");
-
-        //_animator.Play("MeIdleCard");
     }
 
 }

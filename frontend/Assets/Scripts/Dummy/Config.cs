@@ -6,8 +6,8 @@ using UnityEngine.SceneManagement;
 
 public class Config : MonoSingleton<Config>
 {
-    // Config
-    public Vector2i BaseScreenSize;
+    public Vector2 BaseScreenSize;
+    public string Url = "https://evan.dtrautwein.eu/api";
 
 
 }
