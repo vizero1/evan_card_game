@@ -12,7 +12,7 @@ public class CreateOrJoinGameButton : BaseButton
     void Start()
     {
         Events.Instance.OnGameplayStatusChange += GameplayStatusChange;
-
+        Loading.SetActive(false);
     }
 
     void OnDestroy()

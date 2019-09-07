@@ -6,5 +6,7 @@ public enum GameplayStatus
     GetCard,
     OpenCard,
     YourTurn,
-    OpponentTurn
+    OpponentTurn,
+    YouWon,
+    YouLost
 }

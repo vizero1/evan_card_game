@@ -1,3 +1,14 @@
-public enum GameEnvironment{None,Default,}
+public enum GameEnvironment
+{
+    None,
+    Default,
+}
 
-public enum Layer{None,Main,Ingame,Debug,}
+public enum Layer
+{
+    None,
+    Main,
+    Ingame,
+    PlayCards,
+    Debug,
+}

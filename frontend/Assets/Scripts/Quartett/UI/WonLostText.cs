@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using TinyRoar.Framework;
 using UnityEngine;
-using UnityEngine.Experimental.PlayerLoop;
 using UnityEngine.UI;
 
-public class TurnText : MonoBehaviour
+public class WonLostText : MonoBehaviour
 {
-    public bool IsMyTurnText;
+    public bool IsWinText;
     public Text _text;
+
 
     void Start()
     {
@@ -26,14 +26,14 @@ public class TurnText : MonoBehaviour
     {
         switch (newMatchStatus)
         {
-            case GameplayStatus.YourTurn:
-                if (IsMyTurnText)
+            case GameplayStatus.YouWon:
+                if (IsWinText)
                 {
                     EnableText();
                 }
                 break;
-            case GameplayStatus.OpponentTurn:
-                if (!IsMyTurnText)
+            case GameplayStatus.YouLost:
+                if (!IsWinText)
                 {
                     EnableText();
                 }

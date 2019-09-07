@@ -16,12 +16,13 @@ public class GameHandler : MonoSingleton<GameHandler>
         MakeMove
     }
 
-    public string PlayerId;
-    public string GameId;
-    public bool NeedStatus;
-    public bool HasOpponent;
-    public bool MyTurn;
-    public CardDto CurrentCard;
+    public string PlayerId { get; private set; }
+    public string GameId { get; private set; }
+    public bool NeedStatus { get; private set; }
+    public bool HasOpponent { get; private set; }
+    public bool MyTurn { get; private set; }
+    public CardDto CurrentCard { get; private set; }
+    private int _statusRequestInterval = 20;
 
     void Start()
     {
@@ -29,12 +30,19 @@ public class GameHandler : MonoSingleton<GameHandler>
         Updater.Instance.OnUpdate += DoUpdate;
     }
 
+    protected override void OnDestroy()
+    {
+        Events.Instance.OnGameplayStatusChange -= GameplayStatusChange;
+        Updater.Instance.OnUpdate -= DoUpdate;
+    }
+
     void DoUpdate()
     {
-        //if (NeedStatus)
-        //{
-        //    DoRequest(RequestType.Status);
-        //}
+    }
+
+    public void MakeMove(int id)
+    {
+        StartCoroutine(RequestMakeMove(id));
     }
 
     public void DoRequest(RequestType type)
@@ -49,9 +57,6 @@ public class GameHandler : MonoSingleton<GameHandler>
                 break;
             case RequestType.Status:
                 StartCoroutine(RequestStatus());
-                break;
-            case RequestType.MakeMove:
-                StartCoroutine(RequestMakeMove());
                 break;
         }
     }
@@ -83,7 +88,7 @@ public class GameHandler : MonoSingleton<GameHandler>
         else
         {
             var data = www.downloadHandler.text;
-            Debug.Log(data);
+            Debug.Log("CreateGame Reponse: " + data);
             var dto = JsonUtility.FromJson<CreateGameDto>(data);
             GameId = dto.gameId;
             PlayerId = dto.playerId;
@@ -107,7 +112,7 @@ public class GameHandler : MonoSingleton<GameHandler>
         else
         {
             var data = www.downloadHandler.text;
-            Debug.Log(data);
+            Debug.Log("JoinGame Reponse: " + data);
             var dto = JsonUtility.FromJson<CreateGameDto>(data);
             PlayerId = dto.playerId;
             CreateJoinGameSuccessful();
@@ -123,11 +128,12 @@ public class GameHandler : MonoSingleton<GameHandler>
         UIManager.Instance.Switch(Layer.Ingame, UIAction.Show, 0);
     }
 
-    private IEnumerator RequestMakeMove()
+    private IEnumerator RequestMakeMove(int attributeId)
     {
         var url = Config.Instance.Url + "/move/" + GameId;
         var formData = new List<IMultipartFormSection>();
         formData.Add(new MultipartFormFileSection("playerId", PlayerId));
+        formData.Add(new MultipartFormFileSection("attribute", attributeId.ToString()));
 
         var www = UnityWebRequest.Post(url, formData);
         yield return www.SendWebRequest();
@@ -139,7 +145,7 @@ public class GameHandler : MonoSingleton<GameHandler>
         else
         {
             var data = www.downloadHandler.text;
-            Debug.Log(data);
+            Debug.Log("MakeMove Reponse: " + data);
             var dto = JsonUtility.FromJson<MakeMoveDto>(data);
             var hasWon = dto.hasWon;
 
@@ -152,7 +158,7 @@ public class GameHandler : MonoSingleton<GameHandler>
 
     private IEnumerator RequestStatus()
     {
-        Debug.Log("GetStatus");
+        Debug.Log("Run Request GetStatus");
         var url = Config.Instance.Url + "/status/" + GameId + "?playerId=" + PlayerId;
         var www = UnityWebRequest.Get(url);
         yield return www.SendWebRequest();
@@ -164,12 +170,12 @@ public class GameHandler : MonoSingleton<GameHandler>
         else
         {
             var data = www.downloadHandler.text;
-            Debug.Log(data);
+            Debug.Log("GetStatus Reponse: " + data);
             var dto = JsonUtility.FromJson<StatusDto>(data);
 
+            var hasChanged = false;
             if (dto.hasOpponent)
             {
-                var hasChanged = false;
                 if (HasOpponent == false)
                 {
                     HasOpponent = true;
@@ -195,27 +201,34 @@ public class GameHandler : MonoSingleton<GameHandler>
                     if (MyTurn)
                     {
                         Events.Instance.GameplayStatus = GameplayStatus.YourTurn;
+
+                        Timer.Instance.Add(3.0f, () =>
+                        {
+                            LayerManager.Instance.SetAction(Layer.PlayCards, UIAction.Show);
+                        });
                     }
                     else
                     {
                         Events.Instance.GameplayStatus = GameplayStatus.OpponentTurn;
                     }
+
+                    Timer.Instance.Add(1.0f, () =>
+                    {
+                        Events.Instance.GameplayStatus = GameplayStatus.GetCard;
+
+                        Timer.Instance.Add(2.0f, () =>
+                        {
+                            Events.Instance.GameplayStatus = GameplayStatus.OpenCard;
+                        });
+                    });
                 }
             }
 
-
-            var hasCardChanged = false;
-            var isMyTurn = false;
-
-            if (hasCardChanged)
+            if (!hasChanged || !MyTurn)
             {
-                Events.Instance.GameplayStatus = GameplayStatus.OpenCard;
+                yield return new WaitForSeconds(this._statusRequestInterval);
+                DoRequest(RequestType.Status);
             }
-
-            yield return new WaitForSeconds(2);
-            DoRequest(RequestType.Status);
-            //StartCoroutine(DoStatus());
-
         }
     }
 
