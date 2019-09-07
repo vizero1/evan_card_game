@@ -16,10 +16,10 @@ public class MatchManager : Singleton<MatchManager>
         {
             case GameplayStatus.Menu:
                 break;
-            case GameplayStatus.MatchStart:
-                break;
-            case GameplayStatus.MatchStop:
-                break;
+            //case GameplayStatus.MatchStart:
+            //    break;
+            //case GameplayStatus.MatchStop:
+            //    break;
         }
 
     }

@@ -27,8 +27,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7874868328522343999}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: -0.005, z: 0}
-  m_LocalScale: {x: 0.31455988, y: 0.0032657438, z: 0.64933}
+  m_LocalPosition: {x: 0, y: -0.05, z: 0}
+  m_LocalScale: {x: 0.26057824, y: 0.0032657438, z: 0.3886606}
   m_Children: []
   m_Father: {fileID: 7874868329527381898}
   m_RootOrder: 1
@@ -101,6 +101,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7874868329527381898}
+  - component: {fileID: 1180957579}
   m_Layer: 0
   m_Name: Card
   m_TagString: Untagged
@@ -124,6 +125,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!111 &1180957579
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7874868329527381899}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 0}
+  m_Animations:
+  - {fileID: 7400000, guid: 2f9325ad2ffd6b24ea56621a35486e1f, type: 2}
+  - {fileID: 7400000, guid: 4b793eff0625ae34fab3af329f999d62, type: 2}
+  - {fileID: 7400000, guid: af0fdf587f4170e408c7c4f2b33af480, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0
 --- !u!1 &7874868329672420680
 GameObject:
   m_ObjectHideFlags: 0
@@ -151,8 +170,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7874868329672420680}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.31455988, y: 0.005292543, z: 0.64933}
+  m_LocalPosition: {x: 0, y: -0.045, z: 0}
+  m_LocalScale: {x: 0.26057824, y: 0.005292543, z: 0.3886606}
   m_Children: []
   m_Father: {fileID: 7874868329527381898}
   m_RootOrder: 0
