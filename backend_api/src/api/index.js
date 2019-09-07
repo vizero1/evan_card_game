@@ -14,8 +14,11 @@ export default ({ config, runtime }) => {
     res.json({ version });
   });
 
-  // perhaps expose some API metadata at the root
-  api.post('/createGame', async (req, res) => {
+  api.post('/game', async (req, res) => {
+    const { playerName } = req.body;
+
+    console.log('Create game for player ' + playerName);
+
     const description = {
       name: 'New crypto quartet game',
       description: 'evan.network crypto quartet card game',
@@ -25,12 +28,58 @@ export default ({ config, runtime }) => {
     };
 
     console.log('Create digital twin');
-    const digitalTwin = await DigitalTwin.create(main.runtime, {
-      accountId: main.runtime.activeAccount,
+    const digitalTwin = await DigitalTwin.create(runtime, {
+      accountId: runtime.activeAccount,
       description
     });
 
-    res.json({ digitalTwin });
+    res.json({
+      playerId: 'Random-Id',
+      gameId: await digitalTwin.getContractAddress()
+    });
+  });
+
+  // perhaps expose some API metadata at the root
+  api.post('/join/:gameId', async (req, res) => {
+    const { gameId } = req.params;
+    const { playerName } = req.body;
+    console.log(req.body);
+
+    console.log(playerName, 'joins', gameId);
+
+    res.json({
+      gameId: 'Long-ID',
+      playerId: 'long-player-id'
+    });
+  });
+
+  // perhaps expose some API metadata at the root
+  api.post('/move/:gameId', async (req, res) => {
+    const { gameId } = req.params;
+    const { playerId, attribute } = req.body;
+    console.log(
+      'Player ' + playerId + ' selected attribute ' + attribute + ' for game ',
+      gameId
+    );
+
+    res.json({
+      won: true
+    });
+  });
+
+  // perhaps expose some API metadata at the root
+  api.get('/status/:gameId', async (req, res) => {
+    const { gameId } = req.params;
+    const { playerId, attribute } = req.body;
+
+    res.json({
+      opponent: true,
+      myTurn: true,
+      card: {
+        attribute: 'asdf'
+      },
+      attribute: ''
+    });
   });
 
   return api;
