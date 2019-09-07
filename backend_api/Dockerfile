@@ -1,19 +1,26 @@
-FROM node:10
+FROM alpine:3.4
 
-# Create app directory
-WORKDIR /usr/src/app
+# File Author / Maintainer
+LABEL authors="Zouhir Chahoud <zouhir@zouhir.org>"
+
+# Update & install required packages
+RUN apk add --update nodejs bash git
 
 # Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+COPY package.json /www/package.json
+RUN cd /www; npm install
 
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
+# Copy app source
+COPY . /www
 
-# Bundle app source
-COPY . .
+# Set work directory to /www
+WORKDIR /www
 
-EXPOSE 8080
-CMD [ "node", "main.js" ]
+# set your port
+ENV PORT 8080
+
+# expose the port to outside world
+EXPOSE  8080
+
+# start command as per package.json
+CMD ["npm", "start"]
