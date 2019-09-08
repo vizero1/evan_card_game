@@ -13,10 +13,11 @@ const web3Provider = 'wss://testcore.evan.network/ws'
 //const ACCOUTPW = process.env.ACCOUNTPW;
 
 const cardDeckTwinAddress = "0xC12748b85e24529FF691CCd0c902aDB9232897E5";
+const gameTwinAddress = "0x0";
 const player1ID = "0xfc0f02e112Ac3C8D49480ec7ddfc548eD687AF5a";
 const player2ID = "0xfc0f02e112Ac3C8D49480ec7ddfc548eD687AF5a";
 
-async function create_game() {
+async function play_game() {
   // initialize dependencies
   const provider = new Web3.providers.WebsocketProvider(
     web3Provider,
@@ -36,73 +37,13 @@ async function create_game() {
     }
   );
 
-  // creat a new twin with a description
-  const description = {
-    name: 'New crypto quartet game',
-    description: 'evan.network crypto quartet card game',
-    author: 'magic (ProofOfMoin Hackathon Group)',
-    version: '0.0.1',
-    dbcpVersion: 2,
-  };
-
-  const game = await DigitalTwin.create(
-    runtime_gameMaster, { accountId: runtime_gameMaster.activeAccount, description });
-  console.log(`created new digital twin 'game' with address: "${await game.getContractAddress()}"`);
-
-  //
-  const plugin = JSON.parse(JSON.stringify(Container.plugins.metadata));
-
-  plugin.template.properties.cards = {
-      dataSchema: {
-          type: 'array',
-          items: {
-              type: 'object',
-              properties: {
-                  index: {
-                      type: 'integer'
-                  },
-                  address: {
-                      type: 'string'
-                  },
-              },
-          },
-      },
-      permissions: { 0: ['set'] },
-      type: 'list',
-  };
-
-  const cardListDescription = {
-    name: 'quartetGameContainer',
-    description: 'quartetGameContainer description',
-    author: 'magic (ProofOfMoin Hackathon Group)',
-    version: '0.0.1',
-    dbcpVersion: 2,
-  };
-
-  // create a container with default template
-  //const { player1cards, player2cards, cardDeckAddresses, gameLogs } = await game.createContainers({
-  const { player1cards } = await game.createContainers({
-    player1cards: {plugin, description: cardListDescription},
-  });
-  const { player2cards } = await game.createContainers({
-    player2cards: {plugin, description: cardListDescription},
-  });
-  const { cardDeckAddresses } = await game.createContainers({
-    cardDeckAddresses: {}, //use later: {plugin}
-  });
-  const { gameLogs } = await game.createContainers({
-    gameLogs: {},
-  });
-  console.log('created containers');
-  //console.log(`container address "${await cardDeckAddresses.getContractAddress()}"`)
-
-
   //load all cards
-  const cardDeckInstance = new DigitalTwin(runtime_gameMaster, {accountId: runtime_gameMaster.activeAccount, address: cardDeckTwinAddress})
+  const gameInstance = new DigitalTwin(runtime_gameMaster, {accountId: runtime_gameMaster.activeAccount, address: cardDeckTwinAddress})
   console.log("fetching entries...");
-  const cardsObject = await cardDeckInstance.getEntries();
+  const gameObject = await gameInstance.getEntries();
 
-  //console.dir(cardsObject);
+  console.dir(gameObject);
+
 
   const cards = [];
   const cardNames = Object.keys(cardsObject);
@@ -153,8 +94,6 @@ async function create_game() {
   ]);
 
   console.log('done');
-
-  //return game.getContractAddress();
 }
 
-create_game();
+play_game();
