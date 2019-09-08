@@ -13,6 +13,10 @@ import {
 
 const cardDeckTwinAddress = '0xaB3E7dbfB997606EAd9E5E7778fc00404d8368D4';
 
+var state = {
+  makeMoveInProgress: {}
+};
+
 export default ({ config, runtime }) => {
   let api = Router();
 
@@ -64,11 +68,17 @@ export default ({ config, runtime }) => {
       console.log('Setting hasTurn of player1 to:', true);
       await player1cards.setEntry('hasTurn', true);
 
+      console.log('Setting score of player1 to:', 0);
+      await player1cards.setEntry('score', 0);
+
       console.log('Setting username of player2 to:', '');
       await player2cards.setEntry('username', '');
 
       console.log('Setting hasTurn of player2 to:', false);
       await player2cards.setEntry('hasTurn', false);
+
+      console.log('Setting score of player2 to:', 0);
+      await player2cards.setEntry('score', 0);
 
       console.log('Setting entrie Done!');
       var cards = await loadAllCardAddresses(runtime);
@@ -81,6 +91,7 @@ export default ({ config, runtime }) => {
       const card2 = cards;
       await player2cards.addListEntries('cards', card2);
 
+      console.log('Done');
       // res.json({
       //   playerId: await player1cards.getContractAddress(),
       //   gameId: await game.getContractAddress()
@@ -150,6 +161,8 @@ export default ({ config, runtime }) => {
     try {
       const { gameId } = req.params;
       const { playerId, attribute } = req.query;
+
+      state.makeMoveInProgress[gameId] = true;
 
       const {
         player1container,
@@ -235,27 +248,14 @@ export default ({ config, runtime }) => {
           throw 'invalid attribute';
       }
 
-      // const movedCard = opponentCardsAddresses.splice(0, 1);
-      console.log('I have won against card'); //, movedCard.address);
-
-      console.log(
-        'Remove card at index',
-        myCurrentCardOriginalIndex,
-        'from opponent deck'
-      );
-      await runtime.dataContract.removeListEntry(
+      const removeOpponentCardPromise = runtime.dataContract.removeListEntry(
         await opponentCards.getContractAddress(),
         'cards',
         myCurrentCardOriginalIndex,
         runtime.activeAccount
       );
 
-      console.log(
-        'Remove card at index',
-        myCurrentCardOriginalIndex,
-        'from my deck'
-      );
-      await runtime.dataContract.removeListEntry(
+      const removeMyCardPromise = runtime.dataContract.removeListEntry(
         await myCards.getContractAddress(),
         'cards',
         myCurrentCardOriginalIndex,
@@ -263,11 +263,31 @@ export default ({ config, runtime }) => {
       );
 
       if (hasWon) {
-        await myCards.setEntry('hasTurn', true);
-        await opponentCards.setEntry('hasTurn', false);
+        const myScore = await myCards.getEntry('score');
+        await myCards.setEntry('score', myScore + 1);
+
+        await Promise.all([
+          removeOpponentCardPromise,
+          opponentCards.setEntry('hasTurn', false)
+        ]);
+
+        await Promise.all([
+          removeMyCardPromise,
+          myCards.setEntry('hasTurn', true)
+        ]);
       } else {
-        await myCards.setEntry('hasTurn', false);
-        await opponentCards.setEntry('hasTurn', true);
+        const opponentScore = await opponentCards.getEntry('score');
+        await opponentCards.setEntry('score', opponentScore + 1);
+
+        await Promise.all([
+          removeOpponentCardPromise,
+          opponentCards.setEntry('hasTurn', true)
+        ]);
+
+        await Promise.all([
+          removeMyCardPromise,
+          myCards.setEntry('hasTurn', false)
+        ]);
       }
 
       res.json({
@@ -276,6 +296,8 @@ export default ({ config, runtime }) => {
     } catch (error) {
       console.error(error);
       res.sendStatus(500);
+    } finally {
+      state.makeMoveInProgress[gameId] = false;
     }
   });
 
@@ -284,6 +306,11 @@ export default ({ config, runtime }) => {
     try {
       const { gameId } = req.params;
       const { playerId } = req.query;
+
+      if (state.makeMoveInProgress[gameId]) {
+        res.sendStatus(409);
+        return;
+      }
 
       const {
         player1container,
@@ -306,10 +333,18 @@ export default ({ config, runtime }) => {
         return;
       }
 
-      const [opponentName, myTurn, cards] = await Promise.all([
+      const [
+        opponentName,
+        myTurn,
+        cards,
+        myScore,
+        opponentScore
+      ] = await Promise.all([
         opponentCards.getEntry('username'),
         myCards.getEntry('hasTurn'),
-        myCards.getListEntries('cards')
+        myCards.getListEntries('cards'),
+        myCards.getEntry('score'),
+        opponentCards.getEntry('score')
       ]);
 
       const opponent = opponentName != '';
@@ -327,14 +362,18 @@ export default ({ config, runtime }) => {
       res.json({
         hasOpponent: opponent,
         myTurn: myTurn,
-        card: card
+        card: card,
+        myScore: myScore,
+        opponentScore: opponentScore
       });
     } catch (error) {
       console.error(error);
       res.json({
         hasOpponent: false,
         myTurn: false,
-        card: {}
+        card: {},
+        myScore: 0,
+        opponentScore: 0
       });
     }
   });
