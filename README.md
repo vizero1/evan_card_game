@@ -1,8 +1,13 @@
 # ENCQUACG Evan.Network Crypto QUArtet Card Game
 ## A crypto quartet game powered by the evan network
 
+![frontend](https://i.ibb.co/Jp9RdyG/game-Screenshot.png)
+
+
 ### What have done
 We build an crypto quartet card game ontop of the evan.network.
+
+![oneOneSlide](https://i.ibb.co/ThWZxP7/LIVE-ENCQUACG.png)
 
 ### Who we are
 ![Abdul](https://avatars2.githubusercontent.com/u/50483246?s=60&v=4) [Abdul](https://github.com/vizero1)<br />
