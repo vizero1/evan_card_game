@@ -26,12 +26,12 @@ export default ({ config, runtime }) => {
 
   api.post('/game', async (req, res) => {
     try {
-      res.json({
-        playerId: '0xecdffA3806F4A5D5C13Bc7C5FFE1b23b49ba93F4',
-        gameId: '0x07645d1093cB77645FdB85023594f5886861ecCa'
-      });
+      // res.json({
+      //   playerId: '0xCcB420C8265221D7c553B6a8f0651BCA8FAa96bB',
+      //   gameId: '0x6EA694103DFCAE3b96D68D75645B2366321f6B9f'
+      // });
 
-      return;
+      // return;
       const { playerName } = req.query;
 
       console.log('Creating digitalTwin for player:', playerName);
