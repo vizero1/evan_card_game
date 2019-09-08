@@ -36,8 +36,15 @@ export default ({ config, runtime }) => {
       const plugin = configurePlugin();
 
       const [player1cards, player2cards] = await Promise.all([
-        createCardsContainer(game, plugin, 'player1cards', playerName, true),
-        createCardsContainer(game, plugin, 'player2cards', '', false)
+        createCardsContainer(
+          runtime,
+          game,
+          plugin,
+          'player1cards',
+          playerName,
+          true
+        ),
+        createCardsContainer(runtime, game, plugin, 'player2cards', '', false)
       ]);
 
       console.log('Setting username of player1 to:', playerName);
@@ -225,7 +232,8 @@ export default ({ config, runtime }) => {
         await runtime.dataContract.removeListEntry(
           await opponentCards.getContractAddress(),
           'cards',
-          myCurrentCardOriginalIndex
+          myCurrentCardOriginalIndex,
+          runtime.activeAccount
         );
 
         // console.log('Writing new card addresses list for opponent');
@@ -244,7 +252,8 @@ export default ({ config, runtime }) => {
         await runtime.dataContract.removeListEntry(
           await myCards.getContractAddress(),
           'cards',
-          myCurrentCardOriginalIndex
+          myCurrentCardOriginalIndex,
+          runtime.activeAccount
         );
 
         // console.log('Writing new card addresses list for me');
@@ -301,11 +310,8 @@ export default ({ config, runtime }) => {
 
       const opponent = (await opponentCards.getEntry('username')) != '';
       const myTurn = await myCards.getEntry('hasTurn');
-      var cards = await myCards.getListEntries('cards');
 
-      cards.sort((a, b) => {
-        return a.index - b.index;
-      });
+      var cards = await myCards.getListEntries('cards');
 
       const cardDeckInstance = new Container(runtime, {
         accountId: runtime.activeAccount,
