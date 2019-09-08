@@ -26,7 +26,7 @@ export default ({ config, runtime }) => {
 
   api.post('/game', async (req, res) => {
     try {
-      const { playerName } = req.body;
+      const { playerName } = req.query;
 
       console.log('Creating digitalTwin for player:', playerName);
       const game = await createDigitalTwin(runtime);
@@ -77,7 +77,7 @@ export default ({ config, runtime }) => {
   api.post('/join/:gameId', async (req, res) => {
     try {
       const { gameId } = req.params;
-      const { playerName } = req.body;
+      const { playerName } = req.query;
 
       console.log(`${playerName} wants to join game ${gameId}`);
 
@@ -131,7 +131,7 @@ export default ({ config, runtime }) => {
   api.post('/move/:gameId', async (req, res) => {
     try {
       const { gameId } = req.params;
-      const { playerId, attribute } = req.body;
+      const { playerId, attribute } = req.query;
 
       const {
         player1container,
