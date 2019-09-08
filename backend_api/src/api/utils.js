@@ -7,7 +7,7 @@ const {
   PropertyType
 } = require('@evan.network/api-blockchain-core');
 
-const cardDeckTwinAddress = '0xC12748b85e24529FF691CCd0c902aDB9232897E5';
+const cardDeckTwinAddress = '0xaB3E7dbfB997606EAd9E5E7778fc00404d8368D4';
 
 export const createDigitalTwin = async runtime => {
   // create a new twin with a description

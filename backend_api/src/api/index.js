@@ -11,7 +11,7 @@ import {
   playerContainersForGameId
 } from './utils';
 
-const cardDeckTwinAddress = '0xC12748b85e24529FF691CCd0c902aDB9232897E5';
+const cardDeckTwinAddress = '0xaB3E7dbfB997606EAd9E5E7778fc00404d8368D4';
 
 export default ({ config, runtime }) => {
   let api = Router();
@@ -26,6 +26,12 @@ export default ({ config, runtime }) => {
 
   api.post('/game', async (req, res) => {
     try {
+      res.json({
+        playerId: '0xecdffA3806F4A5D5C13Bc7C5FFE1b23b49ba93F4',
+        gameId: '0x07645d1093cB77645FdB85023594f5886861ecCa'
+      });
+
+      return;
       const { playerName } = req.query;
 
       console.log('Creating digitalTwin for player:', playerName);
@@ -47,16 +53,21 @@ export default ({ config, runtime }) => {
         createCardsContainer(runtime, game, plugin, 'player2cards', '', false)
       ]);
 
+      res.json({
+        playerId: await player1cards.getContractAddress(),
+        gameId: await game.getContractAddress()
+      });
+
       console.log('Setting username of player1 to:', playerName);
       await player1cards.setEntry('username', playerName);
 
       console.log('Setting hasTurn of player1 to:', true);
       await player1cards.setEntry('hasTurn', true);
 
-      console.log('Setting username of 2 to:', '');
+      console.log('Setting username of player2 to:', '');
       await player2cards.setEntry('username', '');
 
-      console.log('Setting hasTurn of 2 to:', false);
+      console.log('Setting hasTurn of player2 to:', false);
       await player2cards.setEntry('hasTurn', false);
 
       console.log('Setting entrie Done!');
@@ -70,10 +81,10 @@ export default ({ config, runtime }) => {
       const card2 = cards;
       await player2cards.addListEntries('cards', card2);
 
-      res.json({
-        playerId: await player1cards.getContractAddress(),
-        gameId: await game.getContractAddress()
-      });
+      // res.json({
+      //   playerId: await player1cards.getContractAddress(),
+      //   gameId: await game.getContractAddress()
+      // });
     } catch (error) {
       console.error(error);
       res.sendStatus(500);
@@ -198,78 +209,65 @@ export default ({ config, runtime }) => {
 
       console.log('Fetching cards...');
       const [myCurrentCard, opponentCurrentCard] = await Promise.all([
-        myCurrentCardContainer.getEntry('characteristics'),
-        opponentCurrentCardContainer.getEntry('characteristics')
+        myCurrentCardContainer.getEntry('attribute'),
+        opponentCurrentCardContainer.getEntry('attribute')
       ]);
 
       const myValue = myCurrentCard[attribute];
-      const opponentValue = myCurrentCard[attribute];
+      const opponentValue = opponentCurrentCard[attribute];
 
       var hasWon = false;
       switch (attribute) {
-        case 'value':
-          hasWon = true; //parseFloat(myValue) > parseFloat(opponentValue);
+        case 'MarketCap':
+        case 'Price':
+        case 'TwitterFollowers':
+          console.log(parseFloat(myValue), '>', parseFloat(opponentValue), '?');
+          hasWon = parseFloat(myValue) > parseFloat(opponentValue);
           break;
-        case 'marketRank':
-          hasWon = false; //
+        case 'Rank':
+          console.log(myValue, '>', opponentValue, '?');
+          hasWon = myValue > opponentValue;
           break;
-        case 'issueDate':
-          hasWon = true; //
+        case 'IssueDate':
+          hasWon = Date.parse(myValue) > Date.parse(opponentValue);
           break;
         default:
           throw 'invalid attribute';
       }
 
+      // const movedCard = opponentCardsAddresses.splice(0, 1);
+      console.log('I have won against card'); //, movedCard.address);
+
+      console.log(
+        'Remove card at index',
+        myCurrentCardOriginalIndex,
+        'from opponent deck'
+      );
+      await runtime.dataContract.removeListEntry(
+        await opponentCards.getContractAddress(),
+        'cards',
+        myCurrentCardOriginalIndex,
+        runtime.activeAccount
+      );
+
+      console.log(
+        'Remove card at index',
+        myCurrentCardOriginalIndex,
+        'from my deck'
+      );
+      await runtime.dataContract.removeListEntry(
+        await myCards.getContractAddress(),
+        'cards',
+        myCurrentCardOriginalIndex,
+        runtime.activeAccount
+      );
+
       if (hasWon) {
-        // const movedCard = opponentCardsAddresses.splice(0, 1);
-        console.log('I have won against card'); //, movedCard.address);
-
-        console.log(
-          'Remove card at index',
-          myCurrentCardOriginalIndex,
-          'from opponent deck'
-        );
-        await runtime.dataContract.removeListEntry(
-          await opponentCards.getContractAddress(),
-          'cards',
-          myCurrentCardOriginalIndex,
-          runtime.activeAccount
-        );
-
-        // console.log('Writing new card addresses list for opponent');
-        // await opponentCards.value.addListEntries(
-        //   'cards',
-        //   opponentCardsAddresses
-        // );
-
-        // const myPlayedCard = myCardsAddresses.splice(0, 1);
-
-        console.log(
-          'Remove card at index',
-          myCurrentCardOriginalIndex,
-          'from my deck'
-        );
-        await runtime.dataContract.removeListEntry(
-          await myCards.getContractAddress(),
-          'cards',
-          myCurrentCardOriginalIndex,
-          runtime.activeAccount
-        );
-
-        // console.log('Writing new card addresses list for me');
-        // await myCards.value.addListEntries('cards', myCardsAddresses);
+        await myCards.setEntry('hasTurn', true);
+        await opponentCards.setEntry('hasTurn', false);
       } else {
-        const movedCard = myPlayedCardAddresses.splice(0, 1);
-        await myPlayedCard.value.addListEntries('cards', myPlayedCardAddresses);
-
-        const opponentPlayedCard = opponentCardsAddresses.splice(0, 1);
-        opponentCardsAddresses.push(opponentPlayedCard);
-        opponentCardsAddresses.push(movedCard);
-
-        await opponentCards.value.addListEntries(
-          'cards',
-          opponentCardsAddresses
-        );
+        await myCards.setEntry('hasTurn', false);
+        await opponentCards.setEntry('hasTurn', true);
       }
 
       res.json({
@@ -308,18 +306,23 @@ export default ({ config, runtime }) => {
         return;
       }
 
-      const opponent = (await opponentCards.getEntry('username')) != '';
-      const myTurn = await myCards.getEntry('hasTurn');
+      const [opponentName, myTurn, cards] = await Promise.all([
+        opponentCards.getEntry('username'),
+        myCards.getEntry('hasTurn'),
+        myCards.getListEntries('cards')
+      ]);
 
-      var cards = await myCards.getListEntries('cards');
+      const opponent = opponentName != '';
+
+      const sortedCards = _.sortBy(cards, 'index');
 
       const cardDeckInstance = new Container(runtime, {
         accountId: runtime.activeAccount,
-        address: cards[0].address
+        address: sortedCards[0].address
       });
 
       console.log('Fetching cards...');
-      const card = await cardDeckInstance.getEntry('characteristics');
+      const card = await cardDeckInstance.getEntry('attribute');
 
       res.json({
         hasOpponent: opponent,
@@ -328,7 +331,11 @@ export default ({ config, runtime }) => {
       });
     } catch (error) {
       console.error(error);
-      res.sendStatus(500);
+      res.json({
+        hasOpponent: false,
+        myTurn: false,
+        card: {}
+      });
     }
   });
 
