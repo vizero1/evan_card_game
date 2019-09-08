@@ -24,7 +24,7 @@ public class GameHandler : MonoSingleton<GameHandler>
     public bool MyTurn { get; private set; }
     public CardDto CurrentCard { get; private set; }
     private int _statusRequestInterval = 5;
-    private string HardcodedGameId = "0xa3D6B49D028A992c044885258e30ae1d98Bb6FE5";
+    private string HardcodedGameId = "0xaB3536A255B601CbeBF70519AC003653a9CF4CD3";
     public Text GameIdText;
 
     private string GetGameId()
@@ -211,16 +211,6 @@ public class GameHandler : MonoSingleton<GameHandler>
                 }
                 else
                 {
-                    if (!MyTurn && dto.myTurn)
-                    {
-                        MyTurn = dto.myTurn;
-                        hasChanged = true;
-                    }
-                    if (MyTurn && !dto.myTurn)
-                    {
-                        MyTurn = dto.myTurn;
-                        hasChanged = true;
-                    }
 
                     var cardHasChanged = dto.card.Id != CurrentCard.Id;
                     if (!MyTurn && cardHasChanged)
@@ -239,6 +229,18 @@ public class GameHandler : MonoSingleton<GameHandler>
                     }
                     else if (cardHasChanged)
                     {
+                        hasChanged = true;
+                    }
+
+
+                    if (!MyTurn && dto.myTurn)
+                    {
+                        MyTurn = dto.myTurn;
+                        hasChanged = true;
+                    }
+                    if (MyTurn && !dto.myTurn)
+                    {
+                        MyTurn = dto.myTurn;
                         hasChanged = true;
                     }
 
