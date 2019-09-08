@@ -13,9 +13,7 @@ import {
 
 const cardDeckTwinAddress = '0xaB3E7dbfB997606EAd9E5E7778fc00404d8368D4';
 
-var state = {
-  makeMoveInProgress: {}
-};
+var state = {};
 
 export default ({ config, runtime }) => {
   let api = Router();
@@ -162,7 +160,9 @@ export default ({ config, runtime }) => {
       const { gameId } = req.params;
       const { playerId, attribute } = req.query;
 
-      state.makeMoveInProgress[gameId] = true;
+      console.log('Set make move in progress', gameId);
+      console.log('current state', state);
+      state = { ...state, [gameId]: true };
 
       const {
         player1container,
@@ -239,7 +239,7 @@ export default ({ config, runtime }) => {
           break;
         case 'Rank':
           console.log(myValue, '>', opponentValue, '?');
-          hasWon = myValue > opponentValue;
+          hasWon = myValue < opponentValue;
           break;
         case 'IssueDate':
           hasWon = Date.parse(myValue) > Date.parse(opponentValue);
@@ -297,7 +297,9 @@ export default ({ config, runtime }) => {
       console.error(error);
       res.sendStatus(500);
     } finally {
-      state.makeMoveInProgress[gameId] = false;
+      const { gameId } = req.params;
+      console.log('Unset make move in progress', gameId);
+      state = { ...state, [gameId]: false };
     }
   });
 
@@ -307,7 +309,8 @@ export default ({ config, runtime }) => {
       const { gameId } = req.params;
       const { playerId } = req.query;
 
-      if (state.makeMoveInProgress[gameId]) {
+      console.log('Make move in progress?', state[gameId], gameId);
+      if (state[gameId]) {
         res.sendStatus(409);
         return;
       }
