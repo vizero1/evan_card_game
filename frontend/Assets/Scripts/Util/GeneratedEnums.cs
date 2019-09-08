@@ -11,4 +11,5 @@ public enum Layer
     Ingame,
     PlayCards,
     Debug,
+    Playfield,
 }

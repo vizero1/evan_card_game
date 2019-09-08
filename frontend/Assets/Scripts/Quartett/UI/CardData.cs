@@ -59,7 +59,7 @@ public class CardData : MonoBehaviour
         switch (Type)
         {
             case CardDataType.Headline:
-                this._textMesh.text = card.Headline;
+                this._textMesh.text = card.Name;
                 break;
             case CardDataType.Img:
                 var index = card.Id - 1;
@@ -67,19 +67,19 @@ public class CardData : MonoBehaviour
                 this.GetComponent<SpriteRenderer>().sprite = sprite;
                 break;
             case CardDataType.Attr1:
-                this._textMesh.text = card.Attr1;
+                this._textMesh.text = "MarketCap: " + card.MarketCap;
                 break;
             case CardDataType.Attr2:
-                this._textMesh.text = card.Attr2;
+                this._textMesh.text = "Price: " + card.Price + " $";
                 break;
             case CardDataType.Attr3:
-                this._textMesh.text = card.Attr3;
+                this._textMesh.text = "Rank: #" + card.Rank;
                 break;
             case CardDataType.Attr4:
-                this._textMesh.text = card.Attr4;
+                this._textMesh.text = "IssueDate: " + card.IssueDate;
                 break;
             case CardDataType.Attr5:
-                this._textMesh.text = card.Attr5;
+                this._textMesh.text = "Twitter: " + card.TwitterFollowers + " Followers";
                 break;
         }
 

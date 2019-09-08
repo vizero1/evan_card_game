@@ -6,7 +6,6 @@ using UnityEngine;
 public class StatusDto
 {
     public bool hasOpponent;
-    public CardDto currenCard;
+    public CardDto card;
     public bool myTurn;
-    public string attributeLastRound;
 }

@@ -5,11 +5,12 @@ using UnityEngine;
 
 public class SelectAttrButton : BaseButton
 {
-    public int Id;
+    public string AttributeName;
 
     protected override void ButtonAction()
     {
-        GameHandler.Instance.MakeMove(Id);
-        LayerManager.Instance.SetAction(Layer.PlayCards, UIAction.Hide);
+        Debug.Log("Attr" + AttributeName + " selected! :)");
+        GameHandler.Instance.MakeMove(AttributeName);
+        //LayerManager.Instance.SetAction(Layer.PlayCards, UIAction.Hide);
     }
 }

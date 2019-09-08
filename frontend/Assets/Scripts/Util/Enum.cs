@@ -8,5 +8,6 @@ public enum GameplayStatus
     YourTurn,
     OpponentTurn,
     YouWon,
-    YouLost
+    YouLost,
+    OpponentReady
 }

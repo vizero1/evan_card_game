@@ -25,6 +25,12 @@ public class MyCard : MonoSingleton<MyCard>
             case GameplayStatus.OpenCard:
                 this.AnimateOpenCard();
                 break;
+            case GameplayStatus.YouWon:
+                this.AnimateWin();
+                break;
+            case GameplayStatus.YouLost:
+                this.AnimateLost();
+                break;
         }
     }
 
@@ -36,6 +42,16 @@ public class MyCard : MonoSingleton<MyCard>
     private void AnimateOpenCard()
     {
         _animator.Play("MeOpenCard");
+    }
+
+    private void AnimateWin()
+    {
+        _animator.Play("Win");
+    }
+
+    private void AnimateLost()
+    {
+        _animator.Play("Lost");
     }
 
 }
