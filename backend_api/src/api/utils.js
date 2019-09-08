@@ -1,6 +1,11 @@
 import _ from 'lodash';
 
-const { DigitalTwin, Container } = require('@evan.network/api-blockchain-core');
+const {
+  DigitalTwin,
+  Container,
+  ModificationType,
+  PropertyType
+} = require('@evan.network/api-blockchain-core');
 
 const cardDeckTwinAddress = '0xC12748b85e24529FF691CCd0c902aDB9232897E5';
 
@@ -20,7 +25,12 @@ export const createDigitalTwin = async runtime => {
   });
 };
 
-export const createCardsContainer = async (digitalTwin, plugin, name) => {
+export const createCardsContainer = async (
+  runtime,
+  digitalTwin,
+  plugin,
+  name
+) => {
   console.log('Creating cards container for', name);
 
   const cardListDescription = {
@@ -38,6 +48,16 @@ export const createCardsContainer = async (digitalTwin, plugin, name) => {
   console.log(
     'Created cards container for container ' + name + 'with address:',
     await container[name].getContractAddress()
+  );
+
+  await runtime.rightsAndRoles.setOperationPermission(
+    await container[name].getContractAddress(),
+    runtime.activeAccount,
+    0,
+    'cards',
+    PropertyType.ListEntry,
+    ModificationType.Remove,
+    true
   );
 
   return container[name];
