@@ -14,7 +14,8 @@ Blockchain Quartet Game build in 48 hours on Proof of Moin (Blockchain Mania) Ha
 ### What have done
 We build an crypto quartet card game ontop of the evan.network.
 
-![oneOneSlide](https://i.ibb.co/ThWZxP7/LIVE-ENCQUACG.png)
+![anImportantSlide](https://i.ibb.co/fSyDqw9/github-slide.png)
+
 
 ### Who we are
 ![Abdul](https://avatars2.githubusercontent.com/u/50483246?s=60&v=4) [Abdul](https://github.com/vizero1)<br />
